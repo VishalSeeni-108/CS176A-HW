@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 
+#include <ctype.h>
+
 void error(const char *msg)
 {
     perror(msg);
@@ -48,10 +50,36 @@ int main(int argc, char *argv[])
     if (n < 0) 
          error("ERROR writing to socket");
     bzero(buffer,256);
-    n = read(sockfd,buffer,255);
-    if (n < 0) 
-         error("ERROR reading from socket");
-    printf("%s\n",buffer);
-    close(sockfd);
-    return 0;
+    int repeat = 1; 
+    while(repeat == 1)
+    {
+        n = read(sockfd,buffer,255);
+        if (n < 0) 
+                error("ERROR reading from socket");
+        printf("%s\n",buffer);
+
+        for(int i = 0; i < 256; i++)
+        {
+            if(isalpha(buffer[i]))
+            {
+                close(sockfd);
+                repeat == 0;
+                return 0;
+            }
+        }
+
+        int value = atoi(buffer);
+        printf("value: %d\r\n", value); 
+        if(value < 9)
+        {
+            repeat = 0;
+            break;
+        }
+        else
+        {
+            repeat = 1; 
+            bzero(buffer,256);
+        }
+    }
+   
 }
