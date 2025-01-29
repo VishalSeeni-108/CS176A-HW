@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <ctype.h>
+
 void error(const char *msg)
 {
     perror(msg);
@@ -47,6 +49,47 @@ int main(int argc, char *argv[])
      n = read(newsockfd,buffer,255);
      if (n < 0) error("ERROR reading from socket");
      printf("Here is the message: %s\n",buffer);
+     int repeat = 1; 
+     while(repeat == 1)
+     {
+        int sum = 0;
+        for(int i = 0; i < 256; i++)   
+        {
+            char curr = buffer[i]; 
+            if(isdigit(curr))
+            {
+                sum += curr - '0'; 
+            }
+            else if(isalpha(curr))
+            {
+                n = write(newsockfd,"Sorry, cannot compute!",22);
+                if (n < 0) error("ERROR writing to socket");
+                close(newsockfd);
+                close(sockfd);
+                return 0; 
+            }
+            else
+            {
+                sprintf(buffer, "%d", sum); 
+                n = write(newsockfd, buffer,23);
+                if (n < 0) error("ERROR writing to socket");
+                if(sum < 10)
+                {
+                    printf("Reached here, sum is %d\r\n", sum); 
+                    printf("Buffer is %s\r\n", buffer); 
+                    close(newsockfd);
+                    close(sockfd);
+                    repeat = 0; 
+                    return 0; 
+                }
+                else
+                {
+                    repeat = 1; 
+                    bzero(buffer,256);
+                }
+            }
+        }
+     }
      n = write(newsockfd,"I got your message",18);
      if (n < 0) error("ERROR writing to socket");
      close(newsockfd);
