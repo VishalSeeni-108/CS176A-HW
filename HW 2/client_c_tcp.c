@@ -60,12 +60,14 @@ int main(int argc, char *argv[]) {
 
         // Receive response
         int responseSum = INT_MAX;
-        while(responseSum > 9)
+        while(1)
         {     
             memset(buffer, 0, BUFFER_SIZE);
-            read(sock, buffer, BUFFER_SIZE);
+            int bytes_read = read(sock, buffer, BUFFER_SIZE);
+            if (bytes_read <= 0) break;
+            buffer[bytes_read] = '\0'; 
             printf("From server: %s\n", buffer);
-            responseSum = atoi(buffer); 
+            //responseSum = atoi(buffer); 
         }
     }
 
