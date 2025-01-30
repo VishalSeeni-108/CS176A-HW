@@ -51,13 +51,6 @@ int main(int argc, char *argv[]) {
     // Send message
     write(sock, buffer, strlen(buffer));
 
-    while (1) {
-        // Check for exit condition
-        if (strcmp(buffer, "exit") == 0) {
-            printf("Exiting...\n");
-            break;
-        }
-
         // Receive response
         int responseSum = INT_MAX;
         while(1)
@@ -69,8 +62,7 @@ int main(int argc, char *argv[]) {
             printf("From server: %s\n", buffer);
             //responseSum = atoi(buffer); 
         }
-    }
-
+    printf("Exiting\n"); 
     close(sock);
     return 0;
 }
