@@ -26,18 +26,21 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    //memset(&server_ip, 0, sizeof(server_ip));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
 
     // Convert IPv4 address from text to binary form
     if (inet_pton(AF_INET, server_ip, &server_address.sin_addr) <= 0) {
         perror("Invalid address/Address not supported");
+        close(sock);
         exit(EXIT_FAILURE);
     }
 
     // Connect to the server
     if (connect(sock, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
         perror("Connection failed");
+        close(sock); 
         exit(EXIT_FAILURE);
     }
 
@@ -46,23 +49,21 @@ int main(int argc, char *argv[]) {
     // Communicate with the server
     printf("Enter string: ");
     fgets(buffer, BUFFER_SIZE, stdin);
-    buffer[strcspn(buffer, "\n")] = 0;  // Remove newline character
+    buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
 
     // Send message
     write(sock, buffer, strlen(buffer));
 
-        // Receive response
-        int responseSum = INT_MAX;
-        while(1)
-        {     
-            memset(buffer, 0, BUFFER_SIZE);
-            int bytes_read = read(sock, buffer, BUFFER_SIZE);
-            if (bytes_read <= 0) break;
-            buffer[bytes_read] = '\0'; 
-            printf("From server: %s\n", buffer);
-            //responseSum = atoi(buffer); 
-        }
-    printf("Exiting\n"); 
+    while(1)
+    {     
+        memset(buffer, 0, BUFFER_SIZE);
+        int bytes_read = read(sock, buffer, BUFFER_SIZE);
+        if (bytes_read <= 0) break;
+        buffer[bytes_read] = '\0'; 
+        printf("From server: %s\n", buffer);
+        //responseSum = atoi(buffer); 
+    }        
+
     close(sock);
     return 0;
 }

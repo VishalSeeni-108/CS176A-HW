@@ -46,20 +46,23 @@ int main(int argc, char *argv[]) {
     //printf("Server listening on port %d...\n", port);
 
     // Accept a client connection
-    if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
-        perror("Accept failed");
-        exit(EXIT_FAILURE);
-    }
+
 
     //printf("Client connected.\n");
 
     // Communicate with client (Receive and Send messages in a loop)
     while (1) {
+        if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
+        perror("Accept failed");
+        exit(EXIT_FAILURE);
+    }
         memset(buffer, 0, BUFFER_SIZE);
         int bytes_received = read(new_socket, buffer, BUFFER_SIZE);
         if (bytes_received <= 0) {
             printf("Client disconnected.\n");
-            break;
+            close(new_socket); 
+            close(server_fd); 
+            continue;
         }
         //printf("Client: %s\n", buffer);
         char response[128] = "";
