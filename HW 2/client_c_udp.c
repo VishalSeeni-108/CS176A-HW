@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <limits.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 129
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {

@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <limits.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 129
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -44,14 +44,14 @@ int main(int argc, char *argv[]) {
     //printf("Connected to server at %s:%d\n", server_ip, port);
 
     // Communicate with the server
+    printf("Enter string: ");
+    fgets(buffer, BUFFER_SIZE, stdin);
+    buffer[strcspn(buffer, "\n")] = 0;  // Remove newline character
+
+    // Send message
+    write(sock, buffer, strlen(buffer));
+
     while (1) {
-        printf("Enter string: ");
-        fgets(buffer, BUFFER_SIZE, stdin);
-        buffer[strcspn(buffer, "\n")] = 0;  // Remove newline character
-
-        // Send message
-        send(sock, buffer, strlen(buffer), 0);
-
         // Check for exit condition
         if (strcmp(buffer, "exit") == 0) {
             printf("Exiting...\n");
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         while(responseSum > 9)
         {     
             memset(buffer, 0, BUFFER_SIZE);
-            recv(sock, buffer, BUFFER_SIZE, 0);
+            read(sock, buffer, BUFFER_SIZE);
             printf("From server: %s\n", buffer);
             responseSum = atoi(buffer); 
         }

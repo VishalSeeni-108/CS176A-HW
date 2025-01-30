@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 129
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Listen for connections
-    if (listen(server_fd, 3) < 0) {
+    if (listen(server_fd, 1) < 0) {
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     // Communicate with client (Receive and Send messages in a loop)
     while (1) {
         memset(buffer, 0, BUFFER_SIZE);
-        int bytes_received = recv(new_socket, buffer, BUFFER_SIZE, 0);
+        int bytes_received = read(new_socket, buffer, BUFFER_SIZE);
         if (bytes_received <= 0) {
             printf("Client disconnected.\n");
             break;
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
             }
             else if(isalpha(buffer[i]))
             {
-                strcpy(response, "Sorry, cannot compute\r\n"); 
+                strcpy(response, "Sorry, cannot compute"); 
                 validInput = 0;
                 break; 
             }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Send response
-        send(new_socket, response, strlen(response), 0);
+        write(new_socket, response, strlen(response));
         while(sum > 9)
         {
             int digits[256];
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
             }
             //printf("New sum: %d\n\r", sum); 
             sprintf(response, "%d", sum); 
-            send(new_socket, response, strlen(response), 0);
+            write(new_socket, response, strlen(response));
             usleep(100000); 
         }
     }

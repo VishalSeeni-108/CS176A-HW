@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 129
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Listen for connections
-    if (listen(server_fd, 3) < 0) {
+    if (listen(server_fd, 1) < 0) {
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
