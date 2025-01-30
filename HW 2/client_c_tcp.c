@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <limits.h>
 
 #define BUFFER_SIZE 129
 
@@ -26,7 +25,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    memset(&server_ip, 0, sizeof(server_ip));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
 
@@ -40,30 +38,35 @@ int main(int argc, char *argv[]) {
     // Connect to the server
     if (connect(sock, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
         perror("Connection failed");
-        close(sock); 
+        close(sock);
         exit(EXIT_FAILURE);
     }
 
-    //printf("Connected to server at %s:%d\n", server_ip, port);
-
-    // Communicate with the server
     printf("Enter string: ");
     fgets(buffer, BUFFER_SIZE, stdin);
     buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
 
     // Send message
-    write(sock, buffer, strlen(buffer));
+    if (write(sock, buffer, strlen(buffer)) < 0) {
+        perror("Write failed");
+        close(sock);
+        exit(EXIT_FAILURE);
+    }
 
-    while(1)
-    {     
+    // Receive response from server
+    while (1) {     
         memset(buffer, 0, BUFFER_SIZE);
-        int bytes_read = read(sock, buffer, BUFFER_SIZE);
-        if (bytes_read <= 0) break;
+        int bytes_read = read(sock, buffer, BUFFER_SIZE - 1);
+        if (bytes_read <= 0) {
+            break;  // Exit loop if server closes connection
+        }
         buffer[bytes_read] = '\0'; 
         printf("From server: %s\n", buffer);
-        //responseSum = atoi(buffer); 
-    }        
+    }
 
+    printf("Connection closed by server.\n");
+    
+    // Close socket and terminate program
     close(sock);
     return 0;
 }
