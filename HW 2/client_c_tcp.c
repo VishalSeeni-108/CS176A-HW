@@ -25,10 +25,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-<<<<<<< HEAD
-    //memset(&server_ip, 0, sizeof(server_ip));
-=======
->>>>>>> refs/remotes/origin/main
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
 
@@ -66,6 +62,11 @@ int main(int argc, char *argv[]) {
         }
         buffer[bytes_read] = '\0'; 
         printf("From server: %s\n", buffer);
+
+        if (strcmp(buffer, "Sorry, cannot compute!") == 0 || //from chatgpt - error checking for buffer
+            (strlen(buffer) == 1 && buffer[0] >= '0' && buffer[0] <= '9')) {
+            break;
+        }
     }
 
     printf("Connection closed by server.\n");
