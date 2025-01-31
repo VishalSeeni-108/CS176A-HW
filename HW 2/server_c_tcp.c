@@ -14,9 +14,9 @@ int main(int argc, char *argv[]) {
     }
 
     int port = atoi(argv[1]);  // Convert port argument to integer
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int addrlen = sizeof(address);
+    int server_fd, client_fd; 
+    struct sockaddr_in server_address, client_address;
+    socklen_t client_len = sizeof(client_address); 
     char buffer[BUFFER_SIZE] = {0};
 
     // Create socket
@@ -25,13 +25,21 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) { 
+        perror("setsockopt failed");
+        close(server_fd);
+        exit(EXIT_FAILURE);
+    }
+
     // Define server address
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(port);
+    memset(&server_address, 0, sizeof(server_address)); 
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr.s_addr = INADDR_ANY;
+    server_address.sin_port = htons(port);
 
     // Bind socket
-    if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+    if (bind(server_fd, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
         perror("Bind failed");
         exit(EXIT_FAILURE);
     }
@@ -42,70 +50,61 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server listening on port %d...\n", port);
+    //printf("Server listening on port %d...\n", port);
 
-    // Accept a client connection
-    if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
-        perror("Accept failed");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Client connected.\n");
-
-    // Receive data from client
-    memset(buffer, 0, BUFFER_SIZE);
-    int bytes_received = read(new_socket, buffer, BUFFER_SIZE);
-    
-    if (bytes_received <= 0) {
-        printf("Client disconnected.\n");
-        close(new_socket);
-        close(server_fd);
-        exit(EXIT_FAILURE);
-    }
-
-    // Process received data
-    char response[128] = "";
-    int validInput = 1;
-    int sum = 0;
-
-    for (int i = 0; i < BUFFER_SIZE; i++) {
-        if (buffer[i] == '\n') {
-            break;
-        } else if (isalpha(buffer[i])) {
-            strcpy(response, "Sorry, cannot compute");
-            validInput = 0;
-            break;
-        } else if (isdigit(buffer[i])) {
-            sum += buffer[i] - '0';
-        }
-    }
-
-    if (validInput) {
-        sprintf(response, "%d", sum);
-    }
-
-    // Send response
-    write(new_socket, response, strlen(response));
-
-    // Continue sending reduced sum until it becomes a single digit
-    while (sum > 9) {
-        int new_sum = 0, temp = sum;
-
-        while (temp != 0) {
-            new_sum += temp % 10;
-            temp /= 10;
+    while(1)
+    {
+            // Accept a client connection
+        if ((client_fd = accept(server_fd, (struct sockaddr*)&client_address, &client_len)) < 0) {
+            perror("Accept failed");
+            continue;
         }
 
-        sum = new_sum;
-        sprintf(response, "%d", sum);
-        write(new_socket, response, strlen(response));
-        usleep(100000); // Sleep for 100ms (optional)
+         printf("Client connected.\n");
+
+        // Receive data from client
+        memset(buffer, 0, BUFFER_SIZE);
+        int bytes_received = read(client_fd, buffer, BUFFER_SIZE - 1);
+
+        if (bytes_received <= 0) {
+            //printf("Client disconnected.\n");
+            close(client_fd);
+            continue; 
+         }
+
+         buffer[bytes_received] = '\0'; 
+
+         int validInput = 1; 
+         for(int i = 0; buffer[i] != '\0'; i++){
+            if(!isdigit(buffer[i])){
+                validInput = 0; 
+            }
+         }
+         if(validInput == 0)
+         {
+            const char *response = "Sorry, cannot compute!"; 
+            write(client_fd, response, strlen(response)); 
+         }
+         else
+         {
+            char bufferCpy[BUFFER_SIZE]; 
+            strcpy(bufferCpy, buffer); 
+            while(1){
+                int sum = 0;
+                for(int i = 0; bufferCpy[i] != '\0'; i++){
+                    sum += bufferCpy[i] - '0'; 
+                }
+                sprintf(bufferCpy, "%d", sum); 
+                write(client_fd, bufferCpy, strlen(bufferCpy)); 
+
+                if(sum < 10){
+                    break; 
+                }
+                usleep(100000); // Sleep for 100ms (optional)
+            }
+         }
+         close(client_fd); 
     }
-
-    printf("Server finished processing. Closing connection.\n");
-
-    // Properly close the connection and terminate the program
-    close(new_socket);
-    close(server_fd);
+    close(server_fd); 
     return 0;
 }

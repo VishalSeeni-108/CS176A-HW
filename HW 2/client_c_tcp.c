@@ -14,7 +14,6 @@ int main(int argc, char *argv[]) {
 
     char *server_ip = argv[1];  // Get IP from command line
     int port = atoi(argv[2]);   // Convert port argument to integer
-
     int sock;
     struct sockaddr_in server_address;
     char buffer[BUFFER_SIZE] = {0};
@@ -25,11 +24,12 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    memset(&server_ip, 0, sizeof(server_ip)); 
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
 
     // Convert IPv4 address from text to binary form
-    if (inet_pton(AF_INET, server_ip, &server_address.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, argv[1], &server_address.sin_addr) <= 0) {
         perror("Invalid address/Address not supported");
         close(sock);
         exit(EXIT_FAILURE);
@@ -47,11 +47,7 @@ int main(int argc, char *argv[]) {
     buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
 
     // Send message
-    if (write(sock, buffer, strlen(buffer)) < 0) {
-        perror("Write failed");
-        close(sock);
-        exit(EXIT_FAILURE);
-    }
+    write(sock, buffer, strlen(buffer)); 
 
     // Receive response from server
     while (1) {     
@@ -63,13 +59,12 @@ int main(int argc, char *argv[]) {
         buffer[bytes_read] = '\0'; 
         printf("From server: %s\n", buffer);
 
-        if (strcmp(buffer, "Sorry, cannot compute!") == 0 || //from chatgpt - error checking for buffer
-            (strlen(buffer) == 1 && buffer[0] >= '0' && buffer[0] <= '9')) {
+        if (strcmp(buffer, "Sorry, cannot compute!") == 0 || (strlen(buffer) == 1 && buffer[0] >= '0' && buffer[0] <= '9')) {
             break;
         }
     }
 
-    printf("Connection closed by server.\n");
+    //printf("Connection closed by server.\n");
     
     // Close socket and terminate program
     close(sock);
