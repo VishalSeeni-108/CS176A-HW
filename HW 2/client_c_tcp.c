@@ -1,3 +1,5 @@
+//ChatGPT was used to write the a base TCP client program - I modified it to fit the needs of the lab
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +9,7 @@
 #define BUFFER_SIZE 129
 
 int main(int argc, char *argv[]) {
+    //Input address and port
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <server_ip> <port>\n", argv[0]);
         exit(EXIT_FAILURE);
@@ -42,23 +45,25 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    //Prompt user for input
     printf("Enter string: ");
     fgets(buffer, BUFFER_SIZE, stdin);
     buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
 
-    // Send message
+    // Send message to server
     write(sock, buffer, strlen(buffer)); 
 
     // Receive response from server
-    while (1) {     
+    while (1) { //Keep recieving responses until value is only one digit    
         memset(buffer, 0, BUFFER_SIZE);
-        int bytes_read = read(sock, buffer, BUFFER_SIZE - 1);
+        int bytes_read = read(sock, buffer, BUFFER_SIZE - 1); //Read from server
         if (bytes_read <= 0) {
             break;  // Exit loop if server closes connection
         }
         buffer[bytes_read] = '\0'; 
-        printf("From server: %s\n", buffer);
+        printf("From server: %s\n", buffer); //Print out response
 
+        //Check if condition to break loop has been met
         if (strcmp(buffer, "Sorry, cannot compute!") == 0 || (strlen(buffer) == 1 && buffer[0] >= '0' && buffer[0] <= '9')) {
             break;
         }
