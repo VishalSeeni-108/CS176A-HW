@@ -1,0 +1,20 @@
+This program consists of two client-server pairs of programs, one implementing TCP and the other UDP. 
+
+TCP: 
+The server is started first. It creates a new socket on which it then begins to listen. 
+The client is then started, which creates its own socket and attempts to connect to the server. 
+When the server recieves the connection from the client, it accepts and prepares to recieve data using a data stream. 
+The client sends the number inputted by the user to the server, which verifies that it is a valid input. 
+If it is not a valid input, it returns a message saying so. 
+If it is, it calculates the sum of its digits and returns it to the client, which recieves it and prints it 
+to the terminal. 
+The server then enters a loop where it continually calculates the sum of each new values' digits and returns it to 
+the client until the sum is only one digit. 
+Meanwhile, the client is in a similar loop where it receives new messages from the server until the value recieved
+is only one digit. 
+Finally, once the sum is only one digit, both the client and the server recognize this, close their connection to
+each other, and terminate. 
+
+UDP: 
+The process of connecting and communicating between the client and the server is very similar to TCP, with the only
+difference being that the data is sent in datagrams as opposed to a data stream. 
