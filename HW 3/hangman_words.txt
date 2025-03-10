@@ -1,0 +1,15 @@
+computer
+program
+science
+software
+debugging
+network
+hacker
+database
+compiler
+algorithm
+variable
+function
+integer
+syntax
+runtime
