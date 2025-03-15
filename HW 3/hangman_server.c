@@ -10,7 +10,7 @@
 #define MAX_CLIENTS 3
 #define MAX_WORD_LENGTH 8
 #define MAX_INCORRECT_GUESSES 6
-#define PORT 8081
+#define PORT 8080
 #define MAX_WORDS 15
 #define MAX_BUFFER_SIZE 256
 
@@ -83,7 +83,7 @@ void handle_client(ClientState *client) {
 
     if (bytes_received > 0) {
         guess = tolower(guess);
-        printf("Received guess %c\n", guess);
+        //printf("Received guess %c\n", guess);
 
         int correct = 0;
         for (int i = 0; i < strlen(client->word); i++) {
@@ -99,11 +99,21 @@ void handle_client(ClientState *client) {
         }
 
         if (strcmp(client->word, client->display) == 0) {
+            char win_message[MAX_BUFFER_SIZE];
+            snprintf(win_message, sizeof(win_message), "The word was %s", client->word);
+            send_message(client->socket, win_message);
+            usleep(1); 
             send_message(client->socket, "You Win!");
+            usleep(1); 
             send_message(client->socket, "Game Over!");
             client->game_over = 1;
         } else if (client->incorrect_count >= MAX_INCORRECT_GUESSES) {
-            send_message(client->socket, "You Lose");
+            char lose_message[MAX_BUFFER_SIZE];
+            snprintf(lose_message, sizeof(lose_message), "The word was %s", client->word);
+            send_message(client->socket, lose_message);
+            usleep(1); 
+            send_message(client->socket, "You Lose!");
+            usleep(1); 
             send_message(client->socket, "Game Over!");
             client->game_over = 1;
         }
@@ -176,9 +186,11 @@ int main() {
                 }
 
                 if (client_index == -1) {
-                    send_message(client_socket, "Server Overloaded");
+                    send_message(client_socket, "server-overloaded");
                     close(client_socket);
                 } else {
+                    send_message(client_socket, "server-connected");
+                    load_words(words, &word_count);
                     char *word = get_random_word(words, word_count);
                     initialize_client(&clients[client_index], client_socket, word);
                     send_game_state(clients[client_index].socket, clients[client_index].display, clients[client_index].incorrect_guesses, strlen(clients[client_index].word), clients[client_index].incorrect_count);
